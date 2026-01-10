@@ -1,31 +1,47 @@
 <script setup>
 import { ref } from 'vue';
+import RankingChart from './components/RankingChart.vue';
 
 const domainInput = ref('');
+const searchedDomain = ref(''); // Adding because domain Input was causing jitters
 const isLoading = ref(false);
 const errorMessage = ref('');
+const showChart = ref(false);
+const mockData = ref([]);
 
 const searchDomain = async () => {
   if (!domainInput.value) return;
 
+  searchedDomain.value = domainInput.value;
   isLoading.value = true;
   errorMessage.value = '';
+  showChart.value = false; // Hide chart while loading
 
   try {
-    console.log("Searching for:", domainInput.value);
-
-    // Simulate a delay for the loading spinner
+    // Simulate API delay
     await new Promise(r => setTimeout(r, 1000));
 
+    mockData.value = [
+      { date: '2025-01-01', rank: 5000 },
+      { date: '2025-01-02', rank: 4500 },
+      { date: '2025-01-03', rank: 4200 },
+      { date: '2025-01-04', rank: 3000 }, // Improved rank (graph should go UP visually)
+      { date: '2025-01-05', rank: 3100 },
+      { date: '2025-01-06', rank: 2500 },
+      { date: '2025-01-07', rank: 2450 },
+    ];
+
+    showChart.value = true;
+
   } catch (error) {
-    console.log('Error', error)
-    errorMessage.value = "Failed to fetch data. Please try again.";
+    console.log("Error",error);
+    errorMessage.value = "Failed to fetch data.";
   } finally {
     isLoading.value = false;
   }
 };
-</script>
 
+</script>
 <template>
   <div class="app-container">
     <header>
@@ -50,10 +66,17 @@ const searchDomain = async () => {
     </div>
 
     <main class="results-area">
-      <div v-if="!isLoading" class="placeholder-text">
-        Graph will appear here...
+      <div v-if="isLoading" class="spinner"></div>
+
+      <RankingChart
+        v-else-if="showChart"
+        :rankingHistory="mockData"
+        :domainName="searchedDomain"
+      />
+
+      <div v-else class="placeholder-text">
+        Enter a domain to see the graph.
       </div>
-      <div v-else class="spinner"></div>
     </main>
 
     <footer>
