@@ -3,6 +3,8 @@ import { ref } from 'vue';
 import axios from 'axios';
 import RankingChart from './components/RankingChart.vue';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const domainInput = ref('');
 const searchedDomain = ref(''); // Adding because domain Input was causing jitters
 const isLoading = ref(false);
@@ -21,7 +23,7 @@ const searchDomain = async () => {
   try {
     console.log(`Searching for: ${domainInput.value}`);
 
-    const response = await axios.get(`http://localhost:3000/ranking/${domainInput.value}`);
+    const response = await axios.get(`${apiUrl}/ranking/${domainInput.value}`);
 
     rankingData.value = response.data;
 
