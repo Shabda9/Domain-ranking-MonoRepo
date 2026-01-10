@@ -1,10 +1,29 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { RankingModule } from './ranking/ranking.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    // Connect to the Neon Database
+    SequelizeModule.forRoot({
+      uri: process.env.DATABASE_URL,
+      dialect: 'postgres',
+      autoLoadModels: true,
+      synchronize: true,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
+    }),
+
+    RankingModule,
+  ],
 })
 export class AppModule {}
