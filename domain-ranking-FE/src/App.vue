@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import axios from 'axios';
 import RankingChart from './components/RankingChart.vue';
 
 const domainInput = ref('');
@@ -7,7 +8,7 @@ const searchedDomain = ref(''); // Adding because domain Input was causing jitte
 const isLoading = ref(false);
 const errorMessage = ref('');
 const showChart = ref(false);
-const mockData = ref([]);
+const rankingData = ref([]);
 
 const searchDomain = async () => {
   if (!domainInput.value) return;
@@ -18,20 +19,17 @@ const searchDomain = async () => {
   showChart.value = false; // Hide chart while loading
 
   try {
-    // Simulate API delay
-    await new Promise(r => setTimeout(r, 1000));
+    console.log(`Searching for: ${domainInput.value}`);
 
-    mockData.value = [
-      { date: '2025-01-01', rank: 5000 },
-      { date: '2025-01-02', rank: 4500 },
-      { date: '2025-01-03', rank: 4200 },
-      { date: '2025-01-04', rank: 3000 }, // Improved rank (graph should go UP visually)
-      { date: '2025-01-05', rank: 3100 },
-      { date: '2025-01-06', rank: 2500 },
-      { date: '2025-01-07', rank: 2450 },
-    ];
+    const response = await axios.get(`http://localhost:3000/ranking/${domainInput.value}`);
 
-    showChart.value = true;
+    rankingData.value = response.data;
+
+    if (rankingData.value.length === 0) {
+      errorMessage.value = "No data found for this domain.";
+    } else {
+      showChart.value = true;
+    }
 
   } catch (error) {
     console.log("Error",error);
@@ -70,7 +68,7 @@ const searchDomain = async () => {
 
       <RankingChart
         v-else-if="showChart"
-        :rankingHistory="mockData"
+        :rankingHistory="rankingData"
         :domainName="searchedDomain"
       />
 
