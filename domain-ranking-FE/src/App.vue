@@ -6,32 +6,31 @@ import RankingChart from './components/RankingChart.vue';
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const domainInput = ref('');
-const searchedDomain = ref(''); // Adding because domain Input was causing jitters
 const isLoading = ref(false);
 const errorMessage = ref('');
-const showChart = ref(false);
-const rankingData = ref([]);
+const comparisonResults = ref([]);
+const invalidDomains = ref([]);
 
 const searchDomain = async () => {
   if (!domainInput.value) return;
 
-  searchedDomain.value = domainInput.value;
   isLoading.value = true;
   errorMessage.value = '';
-  showChart.value = false; // Hide chart while loading
+  comparisonResults.value = [];
+  invalidDomains.value = [];
 
   try {
     console.log(`Searching for: ${domainInput.value}`);
 
-    const response = await axios.get(`${apiUrl}/ranking/${domainInput.value}`);
+    const response = await axios.get(`${apiUrl}/ranking/${encodeURIComponent(domainInput.value)}`);
 
-    rankingData.value = response.data;
-
-    if (rankingData.value.length === 0) {
-      errorMessage.value = "No data found for this domain.";
-    } else {
-      showChart.value = true;
-    }
+    response.data.forEach((item) => {
+      if(item.history?.length) {
+        comparisonResults.value.push(item)
+      } else {
+        invalidDomains.value.push(item.domain);
+      }
+    });
 
   } catch (error) {
     console.log("Error",error);
@@ -65,14 +64,28 @@ const searchDomain = async () => {
       {{ errorMessage }}
     </div>
 
+    <div class="latest-ranks-container">
+      <div v-for="item in comparisonResults" :key="item.domain" class="latest-rank-card">
+        <span class="rank-domain">{{ item.domain }}</span>
+        <span class="rank-value">#{{ item.history[0].rank }}</span>
+      </div>
+    </div>
+
+    <div v-if="invalidDomains.length > 0" class="warning-box">
+      <p>
+        <span class="skipped-list">{{ invalidDomains.join(', ') }} : </span>
+        <strong v-if="invalidDomains.length === 1">This domain is currently outside Tranco’s Top 1M, but may appear occasionally in historical rankings.</strong>
+        <strong v-else>These domains are currently outside Tranco’s Top 1M, but may appear occasionally in historical rankings.</strong>
+      </p>
+    </div>
+
     <main class="results-area">
       <div v-if="isLoading" class="spinner"></div>
 
-      <RankingChart
-        v-else-if="showChart"
-        :rankingHistory="rankingData"
-        :domainName="searchedDomain"
-      />
+        <RankingChart
+          v-else-if="comparisonResults.length > 0"
+          :comparisonData="comparisonResults"
+        />
 
       <div v-else class="placeholder-text">
         Enter a domain to see the graph.
@@ -127,6 +140,30 @@ input {
   border-radius: 8px;
   font-size: 16px;
   outline: none;
+}
+
+.latest-ranks-container {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.latest-rank-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rank-value {
+  color: #42b883;
+  font-weight: bold;
+  font-size: 1.1em;
 }
 
 input:focus {
@@ -184,6 +221,22 @@ button:disabled {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.warning-box {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.skipped-list {
+  font-weight: bold;
+  font-family: monospace;
 }
 
 footer {

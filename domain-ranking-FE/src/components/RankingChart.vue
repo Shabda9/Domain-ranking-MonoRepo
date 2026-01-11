@@ -12,7 +12,6 @@ import {
 } from 'chart.js';
 import { Line } from 'vue-chartjs';
 
-// Registering the Chart.js parts we need
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -24,40 +23,48 @@ ChartJS.register(
 );
 
 const props = defineProps({
-  rankingHistory: {
+  comparisonData: {
     type: Array,
     required: true
-  },
-  domainName: {
-    type: String,
-    required: true
   }
 });
+
+function generateRandomColor() {
+  return `hsl(${Math.random() * 360}, 38%, 45%)`
+}
 
 const chartData = computed(() => {
-  return {
-    // The labels are the dates on the bottom X-axis
-    labels: props.rankingHistory.map(item => item.date),
-    datasets: [
-      {
-        label: `Global Rank: ${props.domainName}`,
-        backgroundColor: '#42b883',
-        borderColor: '#42b883',
-        data: props.rankingHistory.map(item => item.rank),
-        tension: 0.3, // Makes the line slightly curved (smooth)
-        pointRadius: 4, // Size of the dots
-      }
-    ]
-  }
+  // X-AXIS (Dates)
+  // we take the dates from the FIRST domain in the list.
+  const labels = props.comparisonData[0].history.map(item => item.date);
+
+  // Y-AXIS (Lines)
+  // we loop through the list of domains to create a line for each one.
+  const datasets = props.comparisonData.map((domainData) => {
+    // cycle through our color list
+    const color = generateRandomColor();
+
+    return {
+      label: domainData.domain, // the name in the Legend
+      backgroundColor: color,
+      borderColor: color,
+      // Map the history array to just the Rank numbers
+      data: domainData.history.map(h => h.rank),
+      tension: 0.3, // Curve the line slightly
+      pointRadius: 4,
+      pointHoverRadius: 6
+    };
+  });
+
+  return { labels, datasets };
 });
 
-// Configure how the chart looks
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     y: {
-      reverse: true, // Makes Rank 1 appear at the TOP
+      reverse: true, // rank 1 is at the top
       title: {
         display: true,
         text: 'Global Rank'
@@ -68,17 +75,24 @@ const chartOptions = {
     },
     x: {
       grid: {
-        display: false // Hides vertical grid lines for a cleaner look
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Timeline'
       }
     }
   },
   plugins: {
     legend: {
       position: 'top',
+      labels: {
+        usePointStyle: true, // makes the legend use dots instead of boxes
+      }
     },
     tooltip: {
       mode: 'index',
-      intersect: false,
+      intersect: false, // shows tooltips for all lines at that specific date
     }
   }
 };
@@ -93,7 +107,7 @@ const chartOptions = {
 <style scoped>
 .chart-container {
   position: relative;
-  height: 400px; /* Fixed height for the graph */
+  height: 400px;
   width: 100%;
 }
 </style>
