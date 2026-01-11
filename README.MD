@@ -1,7 +1,7 @@
 # 📈 Domain Ranking Tracker
 
 A full-stack web application that visualizes and compares the historical popularity rankings of websites using the **Tranco List API**.
-Built with a **Monorepo architecture**, leveraging **Vue.js** for the frontend and **NestJS** for the backend.
+Leveraging **Vue.js** for the frontend and **NestJS** for the backend, this project uses caching technique in the backend to check if the data existing in the DB is latest or not and sends it, else calls the tranco API to fetch and store new data.
 
 🔴 **Live Demo:** https://domain-ranking-system.pages.dev/
 
@@ -19,6 +19,18 @@ Built with a **Monorepo architecture**, leveraging **Vue.js** for the frontend a
   Fully automated builds and deployments:
   - **Frontend:** Cloudflare Pages
   - **Backend:** Koyeb
+
+- **Database Caching**
+  Fetch Real-time Domain Rankings Queries domain rank history from the public Tranco API:
+  ```bash
+  https://tranco-list.eu/api/ranks/domain/<domain>
+  ```
+  Caching is done in Postgres SQL:
+  - **Caching:** If cached data exists and was updated withing 24 hours, send it back from the DB else call Tranco API and fetch new data.
+  - **Multiple Domain:** Multiple domain can be compared that generates lines with multiple colors.
+  ```bash
+  GET /ranking/google.com,facebook.com,github.com
+  ```
 
 ---
 
