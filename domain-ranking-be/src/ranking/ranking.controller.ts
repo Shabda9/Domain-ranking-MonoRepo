@@ -5,8 +5,11 @@ import { RankingService } from './ranking.service';
 export class RankingController {
   constructor(private readonly rankingService: RankingService) {}
 
-  @Get(':domain')
-  async getDomainRank(@Param('domain') domain: string) {
-    return this.rankingService.getRanking(domain);
+  @Get(':domains')
+  async getRank(@Param('domains') input: string) {
+    const domainList = input.split(',').map(d => d.trim()).filter(d => d);
+
+    // always return a list, even for one domain
+    return this.rankingService.getRankings(domainList);
   }
 }

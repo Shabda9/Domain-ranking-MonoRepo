@@ -10,8 +10,27 @@ export class RankingService {
     private rankingModel: typeof Ranking,
   ) {}
 
+  async getRankings(domains: string[]) {
+    // create a promise for every domain in the list
+    // run them all at the same time
+    const promises = domains.map(async (domain) => {
+      const history = await this.getRanking(domain);
+
+      // wrap the result so the FE knows which data belongs to whom
+      return {
+        domain: domain,
+        history: history,
+      };
+    });
+
+    //wait for all requests to finish
+    const results = await Promise.all(promises);
+
+    return results;
+  }
+
   async getRanking(domain: string) {
-    // Check DB for data of the domainname from today?
+    // check DB for data of the domainname from today?
     const today = new Date().toISOString().slice(0, 10); // "2025-01-09"
 
     const cachedData = await this.rankingModel.findAll({
