@@ -39,7 +39,8 @@ export class RankingService {
     });
 
     // check if the data is latest one is from today
-    const hasTodayData = cachedData.length > 0 && cachedData[cachedData.length - 1].date === today;
+    const hasTodayData =
+      cachedData.length > 0 && cachedData[cachedData.length - 1].date === today;
 
     if (hasTodayData) {
       console.log(`[CACHE HIT] Found data for ${domain}`);
