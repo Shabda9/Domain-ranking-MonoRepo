@@ -7,12 +7,15 @@ export class RankingController {
 
   @Get(':domains')
   async getRank(@Param('domains') input: string) {
+    // 'abc.com, xyz.com, Redit.com, ,'
     const domainList = input
-      .split(',')
-      .map((d) => d.trim().toLowerCase())
-      .filter((d) => d);
+      .split(',') // gets separated using comma operator ['abc.com', 'xyz.com', 'Redit.com', ' ']
+      .map((d) => d.trim().toLowerCase()) // makes all the domain to lowercase
+      .filter((d) => d); // filtering the empty strings
+
+    const uniqueDomainList = [...new Set(domainList)]; // removing the duplicates
 
     // always return a list, even for one domain
-    return this.rankingService.getRankings(domainList);
+    return this.rankingService.getRankings(uniqueDomainList);
   }
 }

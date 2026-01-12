@@ -29,10 +29,6 @@ const props = defineProps({
   }
 });
 
-function generateRandomColor() {
-  return `hsl(${Math.random() * 360}, 38%, 45%)`
-}
-
 const chartData = computed(() => {
   // X-AXIS (Dates)
   // we take the dates from the FIRST domain in the list.
@@ -40,9 +36,10 @@ const chartData = computed(() => {
 
   // Y-AXIS (Lines)
   // we loop through the list of domains to create a line for each one.
-  const datasets = props.comparisonData.map((domainData) => {
-    // cycle through our color list
-    const color = generateRandomColor();
+  const datasets = props.comparisonData.map((domainData, index) => {
+    // Generating random color for every line
+    const hue = (index * 137.5) % 360;
+    const color = `hsl(${hue}, 70%, 50%)`;
 
     return {
       label: domainData.domain, // the name in the Legend
