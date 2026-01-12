@@ -7,7 +7,10 @@ export class RankingController {
 
   @Get(':domains')
   async getRank(@Param('domains') input: string) {
-    const domainList = input.split(',').map(d => d.trim()).filter(d => d);
+    const domainList = input
+      .split(',')
+      .map((d) => d.trim().toLowerCase())
+      .filter((d) => d);
 
     // always return a list, even for one domain
     return this.rankingService.getRankings(domainList);
